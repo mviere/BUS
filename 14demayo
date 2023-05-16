@@ -1,9 +1,79 @@
 import time
 import random
 
+
+# %% Función Main
+
+def main() -> None:
+    """
+    Requiere:
+    - `import pandas as pd`
+    @brief
+    @param None
+    @return None
+    """
+    
+    escenario_filename = "escenario.csv"
+    df_escenarios = CSV2DF(escenario_filename)
+    print(df_escenarios[Tiempo])
+    endProgram = False
+    '''while endProgram == False:
+
+        
+                modo = escenario
+                comandos = mode_management(modo)
+                tiempo = time_management()
+                command_processing(comandos, tiempo)
+        
+        endProgram = True  ''' 
+    return
+                
+
+if __name__ == "__main__":
+    main()
+
+def CSV2DF (filename: str) -> pd.DataFrame:
+    """
+    Requiere: 
+    - `import pandas as pd`
+
+    @brief
+
+    @param filename (str):                 Nombre del archivo 
+
+    @return df   (pandas.DataFrame):       DataFrame de los datos
+    """
+    df = pd.read_csv(filename, header=[0], index_col=0)
+
+    return df
+
+
 t = 0
 comando = ""
 
+"""
+# Definition Table (en base a los txt)
+mode_A = []
+with open("mode_A.txt") as fname:
+    lineas = fname.readlines()
+    for linea in lineas:
+        mode_A.append(linea.strip('\n'))
+        
+mode_B = []
+with open("mode_B.txt") as fname:
+    lineas = fname.readlines()
+    for linea in lineas:
+        mode_B.append(linea.strip('\n'))
+        
+mode_C = []
+with open("mode_C.txt") as fname:
+    lineas = fname.readlines()
+    for linea in lineas:
+        mode_C.append(linea.strip('\n'))
+    return
+"""
+
+'''
 'Funcion contador'
 def():
     ....
@@ -16,7 +86,7 @@ while ('parametro booleano de la funcion contador de tiempo'):
         comando = random.choice(["comando1", "comando2", "comando3"])
     print("t:", t, "comando:", comando)
     time.sleep(1)
-
+'''
 '''
 def main():
     es una función anidada en la que realiza las siguientes acciones:

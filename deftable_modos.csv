@@ -1,8 +1,10 @@
-Modo,Bloque,Comando
-A,1,CmdA1
-A,1,CmdA2
-A,1,CmdA3
-B,1,CmdB1
-B,1,CmdB2
-B,1,CmdB3
-C,0,CmdC
+Modo,Comandos
+Modo A,CmdA1
+Modo A,CmdA2
+Modo A,CmdA3
+Modo B,CmdB1
+Modo B,CmdB2
+Modo B,CmdB3
+Modo C,CmdC1
+Modo C,CmdC2
+Modo C,CmdC3
