@@ -1,0 +1,52 @@
+import time
+import random
+
+t = 0
+comando = ""
+
+'Funcion contador'
+def():
+    ....
+return contando, T, t, 
+
+'Funcion ejecucion de escenario'
+while ('parametro booleano de la funcion contador de tiempo'):
+    t += 1 'potestad de funcion contador'
+    if t % 1 == 0:
+        comando = random.choice(["comando1", "comando2", "comando3"])
+    print("t:", t, "comando:", comando)
+    time.sleep(1)
+
+'''
+def main():
+    es una función anidada en la que realiza las siguientes acciones:
+        lee línea de archivo escenario
+        interactua con función gestión de modos(ModoX)
+        interactua con función gestión del tiempo()
+        ejecuta escenario une comando con tiempo
+    return
+
+def gestión de modos(ModoX):
+    Lista_de_Cmd = []
+    evalúa si debe ocurrir una transición, compara el ModoX con Modo anterior escenario[n-1]
+    si hay transición:
+        Lista_de_Cmd_Trans = función transición de modos()
+        comandos.append(Lista_de_Cmd_Trans)
+    Lista_de_Cmd = función procesamiento de modos(Modox)
+    comandos.append(Lista_de_Cmd)
+    return Lista_de_Cmd
+
+def transición de modos():
+    lee los comandos de la def table de trans.
+    return Lista_de_Cmd_Trans
+
+def procesamiento de modos(ModoX):
+    lee los comandos de las def table de modos.
+    return Lista_de_Cmd
+
+def gestión del tiempo():
+    contador
+    return contando, T, t
+'''
+
+''''''''''''
