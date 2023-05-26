@@ -62,6 +62,15 @@ def mode_processing(deftable_filename: str, modo: str):
         
     return commmand_queue
 
+def event_handling (event: bool, regist_filename: str) -> list:
+
+    commmand_queue = []
+    commmand_queue = ["estos", "son", "comandos", "que se", "ejecutan", "por", "occurencia", "de un", "evento wow"]
+
+    DF2CSV(df_evento, regist_filename)
+
+    return commmand_queue
+
 def CSV2DF (filename: str) -> pd.DataFrame:
 
     """
@@ -72,11 +81,28 @@ def CSV2DF (filename: str) -> pd.DataFrame:
 
     @param filename (str):                 Nombre del archivo 
 
-    @return df   (pandas.DataFrame):       DataFrame de los datos
+    @return df pandas.DataFrame):          DataFrame de los datos
     """
     
     df = pd.read_csv(filename, header=[0])
     return df
+
+def DF2CSV (df: pd.DataFrame, filename: str):
+
+    """
+    Requiere: 
+    - `import pandas as pd`
+
+    @brief
+
+    @param filename (str):                 Nombre del archivo 
+
+    @param df (pandas.DataFrame):          DataFrame de los datos
+    """
+    
+    df.to_csv(filename, mode='a', index=False, header=False)
+
+    return
 
 # %% Función Main
 
@@ -99,26 +125,33 @@ def main() -> None:
     T = 10
     t = 1
 
-    endProgram = False
-    while endProgram == False:
+    GoProgram = True
+    while GoProgram:
         
         # Itero el archivo escenario. Cada fila es un Tiempo que tiene asociado un Modo.
         for index, cols in df_escenario.iterrows():
             
-            # Defino el DataFrame modo y premodo. En cada uno de ellos, está la información del modo y la cantidad de ciclos que permanece en ese modo.
+            # Defino el DataFrame modo. En él está la información del modo y la cantidad de ciclos que permanece en ese modo.
             df_mode = df_escenario.loc[[index], :]
             ciclos = df_mode['Ciclos'].values[0]
             
-            # Llamo a la función de gestión de modo
+            # Defino la secuencia de comandos a ejecutar para transicionar al modo y quedarme allí la cantidad de ciclos que disponga el archivo "escenario.csv"
             deftable_filename = "deftable_modos.csv"
             command_queue = mode_management(df_mode, deftable_filename, ciclos, T)
             
+            # Obtengo el tiempo en el que me encuentro
             #tiempo = time_management(T,t)
+
+            # Si ocurrió un evento, obtengo la secuencia de comandos para manejarlo.
+            event = bool(random.getrandbits(1))
+            regist_filename = "event_register.csv"
+            if event:
+                command_queue = event_handling(event, regist_filename)
 
             # Ejecuto secuencia de comandos
             command_processing(command_queue)   #command_processing(command_queue, algo del tiempo)
 
-        endProgram = True 
+        GoProgram = False 
     return
                 
 
