@@ -1,10 +1,10 @@
-Modo,Comandos
-Modo A,CmdA1
-Modo A,CmdA2
-Modo A,CmdA3
-Modo B,CmdB1
-Modo B,CmdB2
-Modo B,CmdB3
-Modo C,CmdC1
-Modo C,CmdC2
-Modo C,CmdC3
+Modo,Comandos,Duracion
+Modo A,CmdA1,3
+Modo A,CmdA2,4
+Modo A,CmdA3,2
+Modo B,CmdB1,1
+Modo B,CmdB2,3
+Modo B,CmdB3,4
+Modo C,CmdC1,5
+Modo C,CmdC2,7
+Modo C,CmdC3,1

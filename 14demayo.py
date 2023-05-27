@@ -94,7 +94,7 @@ def main() -> None:
     print("\nImportando librerías y scripts necesarios...")
     
     # Leo archivo escenario
-    escenario_filename = "escenario.csv"
+    escenario_filename = "escenario2.csv"
     df_escenario = CSV2DF(escenario_filename)
 
     # Defino granularidades temporales [segundos]
