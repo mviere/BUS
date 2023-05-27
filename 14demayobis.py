@@ -65,11 +65,15 @@ def mode_processing(deftable_filename: str, modo: str):
 def event_handling (event: bool, regist_filename: str) -> list:
 
     commmand_queue = []
-    commmand_queue = ["estos", "son", "comandos", "que se", "ejecutan", "por", "occurencia", "de un", "evento wow"]
+    deftable_eventos = "deftable_eventos.csv"
+    df_deftable = CSV2DF(deftable_eventos)
+    df_blockcmd = df_deftable.loc[(df_deftable["Evento"] == event), :]
 
-    new_row = {'Descripcion': event, 'Cualk': 0.7}
+    #commmand_queue = ["estos", "son", "comandos", "que se", "ejecutan", "por", "occurencia", "de un", "evento wow"]
+
+    '''new_row = {'Descripcion': event, 'Cualk': 0.7}
     df_evento = pd.DataFrame(new_row, index=False, header=False)
-    DF2CSV(df_evento, regist_filename, 'append')
+    DF2CSV(df_evento, regist_filename, 'append')'''
 
     return commmand_queue
 
