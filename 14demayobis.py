@@ -62,15 +62,15 @@ def mode_processing(deftable_filename: str, modo: str):
         
     return commmand_queue
 
-def event_handling (event: bool, regist_filename: str) -> list:
+def event_handling (event: str, regist_filename: str, deftable_eventos: str) -> list:
 
+    # Segun el evento que ocurrió, obtengo la lista de comandos a ejecutar
     commmand_queue = []
-    deftable_eventos = "deftable_eventos.csv"
     df_deftable = CSV2DF(deftable_eventos)
     df_blockcmd = df_deftable.loc[(df_deftable["Evento"] == event), :]
+    commmand_queue = df_blockcmd['Comandos'].values
 
-    #commmand_queue = ["estos", "son", "comandos", "que se", "ejecutan", "por", "occurencia", "de un", "evento wow"]
-
+    # Registro el evento que ocurrió con el tiempo
     '''new_row = {'Descripcion': event, 'Cualk': 0.7}
     df_evento = pd.DataFrame(new_row, index=False, header=False)
     DF2CSV(df_evento, regist_filename, 'append')'''
@@ -157,7 +157,8 @@ def main() -> None:
             event = bool(random.getrandbits(1))
             if event:
                 event = random.choice(["Perdida de SMA por drag", "Perturbaciones por gravedad"])
-                command_queue = event_handling(event, regist_filename)
+                deftable_eventos = "deftable_eventos.csv"
+                command_queue = event_handling(event, regist_filename, deftable_eventos)
 
             # Ejecuto secuencia de comandos
             command_processing(command_queue)
