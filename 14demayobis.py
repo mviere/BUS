@@ -69,11 +69,19 @@ def event_handling (event: str, regist_filename: str, deftable_eventos: str) -> 
     df_deftable = CSV2DF(deftable_eventos)
     df_blockcmd = df_deftable.loc[(df_deftable["Evento"] == event), :]
     commmand_queue = df_blockcmd['Comandos'].values
-
+    
     # Registro el evento que ocurrió con el tiempo
-    '''new_row = {'Descripcion': event, 'Cualk': 0.7}
-    df_evento = pd.DataFrame(new_row, index=False, header=False)
-    DF2CSV(df_evento, regist_filename, 'append')'''
+    new_row = {'Descripcion': df_blockcmd["Evento"].values[0], 'Cualk': 0.7}
+    print("new_row:", new_row)
+    df_evento = pd.DataFrame(new_row)
+    print("df_evento:", df_evento)
+
+    new_row2 = {'Descripcion': event, 'Cualk': 0.7}
+    print("new_row2:", new_row2)
+    df_evento2 = pd.DataFrame(new_row2)
+    print("df_evento2:", df_evento2)
+    
+    #DF2CSV(df_evento, regist_filename, 'append')
 
     return commmand_queue
 
