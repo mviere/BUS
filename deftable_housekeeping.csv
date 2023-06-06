@@ -1,0 +1,10 @@
+Modo,Sensor,Temperatura min [C], Temperatura max [C]
+Modo A,S1,20,40
+Modo A,S2,-10,60
+Modo A,S3,-5,30
+Modo B,S1,0,15
+Modo B,S2,-10,40
+Modo B,S3,-3,10
+Modo C,S1,10,70
+Modo C,S2,0,15
+Modo C,S3,-20,10
