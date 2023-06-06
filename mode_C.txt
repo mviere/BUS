@@ -1,3 +1,0 @@
-command_7
-command_8
-command_9

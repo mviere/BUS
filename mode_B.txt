@@ -1,3 +1,0 @@
-command_4
-command_5
-command_6
