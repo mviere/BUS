@@ -3,7 +3,7 @@ import pandas as pd
 import threading
 import time
 import random
-import Componentes as comp
+import Aplicacion as app
 
 
 # %% Algoritmo C2A
@@ -176,7 +176,7 @@ def application_management (**kwargs):
         df_nominalvalues = kwargs.get('housekeeping')
 
         # PASO 4: obtengo los estados de las variables representativas del housekeeping
-        df_realvalues = comp.sensing_temperatures(df_nominalvalues["Sensor"].values.tolist())
+        df_realvalues = app.sensing_temperatures(df_nominalvalues["Sensor"].values.tolist())
 
         # PASO 5: comparo los valores nominales de las variables representativas con los estados de las variables
         state_list = []
