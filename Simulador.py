@@ -4,62 +4,76 @@ import threading
 import time
 import random
 import AlgoritmoC2A as ac
+import FuncAux as fa
 
 
 # %% Simulador
 # ---------------------------------------------------------------------------- #
 
-
 def main():
     
-    print("\nImportando librerías y scripts necesarios...\n")
+    # Información del archivo "escenario.csv".
+    escenario_filename = "escenario.csv"                #Establece una intención de secuencia de modos y su permanencia
+    df_escenario = fa.CSV2DF(escenario_filename)
 
-    escenario_filename = "escenario.csv"
-    df_escenario = ac.CSV2DF(escenario_filename)
-
-    dT = 5
-    dt = 1
+    # Definición de granularidades temporales
+    dT = 13
     
-    deftable_filename = "deftable_modos.csv"
-    deftable_filename2 = "deftable_transicion.csv"
-    deftable_filename3 = "deftable_housekeeping.csv"
-
-    deftable_eventos = "deftable_eventos.csv"
-    regist_filename = "event_register.csv"
-    df_evento1 = pd.DataFrame(columns=['Descripcion', 'Cualk'])
-    ac.DF2CSV(df_evento1, regist_filename, 'write')
-
-    timer = ac.TimerThread()
-    timer.start()
-
-
+    # Rutas a archivos auxiliares
+    deftable_modos = "deftable_modos.csv"                #Def. Table con Bloque de Comandos para cada modo
+    deftable_transicion = "deftable_transicion.csv"      #Def. Table con Bloque de Comandos para la transición entre modos
+    deftable_housekeeping = "deftable_housekeeping.csv"  #Def. Table con Bloque de Comandos para el housekeeping de cada modo
+    deftable_eventos = "deftable_eventos.csv"            #Def. Table con Bloque de Comandos para el manejo de eventos impredecibles
+    event_register = "event_register.csv"              
     
+    # Creación del DataFrame donde se almacenarán los eventos ocurridos
+    df = pd.DataFrame(columns=['Descripcion', 'Ciclo', 'Tiempo'])
+    fa.DF2CSV(df, event_register, 'write')
+    
+    previous_mode = None
+
     endProgram = False
     while not endProgram:
         
+        T = 0
         for index, cols in df_escenario.iterrows():
-            
+
             df_mode = df_escenario.loc[[index], :]
-            ciclos = df_mode['Ciclos'].values[0]
-            # PASO 1: obtengo los valores nominales de las variables representativas de housekeeping del modo
-            command_queue, df_nominalvalues = ac.mode_management(df_mode, deftable_filename, deftable_filename2, deftable_filename3, ciclos, dT)
+            cant_ciclos = df_mode['Ciclos'].values[0]
+            mode_name = df_mode['Modo'].values[0]
             
-            event = bool(random.getrandbits(1))
-            if event:
-                event = random.choice(["Perdida de SMA por drag", "Perturbaciones por gravedad"])
+            for ciclo in range(cant_ciclos):
 
-                command_queue = ac.event_handling(event, regist_filename, deftable_eventos, dT, timer)
+                time_queue = list(range(dT))
+                
+                command_queue, df_nominalvalues, mode_name = ac.mode_management(mode_name, previous_mode, dT, deftable_modos, deftable_transicion, deftable_housekeeping)
+                
+                event_time = None
+                for t in range(dT):
 
-                ac.command_processing(df_nominalvalues, command_queue, timer)
+                    probability = 0.2
+                    if random.random() < probability:
+                        event = True
+                        event_cycle = T
+                        event_time = t
 
-            # PASO 2: paso los valores nominales a commando processing para obtener el estado de housekeeping allí
-            ac.command_processing(df_nominalvalues, command_queue, timer)
+                    else:
+                        event = False
+                    
+                if event:
+                    event = random.choice(["Evento E", "Evento F"])
+                    command_queue = ac.event_handling(event, event_register, deftable_eventos, dT, event_time, event_cycle)
+                    ac.command_processing(df_nominalvalues, command_queue, time_queue, T)
+                    mode_name = 'Safe'
+                
+                else:
+                    ac.command_processing(df_nominalvalues, command_queue, time_queue, T)
+            
+                previous_mode = mode_name
+                T += 1
 
         endProgram = True
 
-    timer.stop()
-    timer.join()
-
 if __name__ == "__main__":
     main()
-
+    
