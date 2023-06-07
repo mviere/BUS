@@ -8,41 +8,6 @@ import random
 # %% Algoritmo C2A
 # ---------------------------------------------------------------------------- #
 
-class TimerThread(threading.Thread):
-    def __init__(self):
-        super().__init__()
-        self._current_time = -1
-        self._current_cycle = 0
-        self._is_running = False
-        self._lock = threading.Lock()
-
-    def run(self):
-        self._is_running = True
-        while self._is_running:
-            with self._lock:
-                self._current_time += 1
-                if self._current_time % 5 == 0:
-                    self._current_cycle += 1
-            time.sleep(1)
-
-    def stop(self):
-        self._is_running = False
-
-    def get_current_time(self):
-        with self._lock:
-            return self._current_time
-
-    def get_current_cycle(self):
-        with self._lock:
-            return self._current_cycle
-
-    def increment_time(self):
-        with self._lock:
-            self._current_time += 1
-            if self._current_time % 5 == 0:
-                self._current_cycle += 1
-
-
 def CSV2DF(filename: str) -> pd.DataFrame:
 
     # Leo el archivo CSV y lo almaceno en un DataFrame
@@ -58,25 +23,6 @@ def DF2CSV (df: pd.DataFrame, filename: str, estilo: str):
         df.to_csv(filename, mode='w', index=False)
 
     return
-
-
-def mode_transition (deftable_transicion: str, dT: int):
-
-    command_queue_trans = []
-
-    df_deftable = CSV2DF(deftable_transicion)
-    
-    for cmd in df_deftable.values.tolist():
-        for c in cmd:
-            if len(command_queue_trans) < dT:
-                command_queue_trans.append(c)
-            else:
-                break
-
-    while len(command_queue_trans) < dT:
-        command_queue_trans.append(None)
-
-    return command_queue_trans
 
 
 def mode_processing(deftable_modos: str, deftable_housekeeping: str, mode_name: str):
@@ -102,28 +48,46 @@ def mode_processing(deftable_modos: str, deftable_housekeeping: str, mode_name: 
     return commmand_queue, duracion, df_nominalvalues
 
 
-def mode_management (mode_name: str, cant_ciclos: int, dT: int, deftable_modos: str, deftable_transicion: str, deftable_housekeeping: str) -> list:
+def mode_transition(deftable_filename: str, dT: int):
+
+    command_queue_trans = []
+
+    df_deftable = CSV2DF(deftable_filename)
+    
+    for cmd in df_deftable.values.tolist():
+        for c in cmd:
+            if len(command_queue_trans) < dT:
+                command_queue_trans.append(c)
+            else:
+                break
+
+    return command_queue_trans
+
+
+def mode_management (mode_name: str, previous_mode: str, dT: int, deftable_modos: str, deftable_transicion: str, deftable_housekeeping: str) -> list:
     """
     Esta función
     """
     command_queue = []
 
-    command_queue_trans = mode_transition(deftable_transicion, dT)
-    command_queue.extend(command_queue_trans)
+    if mode_name != previous_mode:
+
+        command_queue_trans = mode_transition(deftable_transicion, dT)
+        command_queue.extend(command_queue_trans)
    
     command_queue2, lista_duracion, df_nominalvalues = mode_processing(deftable_modos, deftable_housekeeping, mode_name)
     
-    for ciclo in range(cant_ciclos):
-        for i in range(len(command_queue2)):
-            for j in range(lista_duracion[i]):
-                command_queue.append(command_queue2[i])
-        while len(command_queue) % dT != 0:
-            command_queue.append(None)
+    for i in range(len(command_queue2)):
+        for j in range(lista_duracion[i]):
+            command_queue.append(command_queue2[i])
 
-    return command_queue, df_nominalvalues
+    while len(command_queue) % dT != 0:
+        command_queue.append(None)
+
+    return command_queue, df_nominalvalues, mode_name
 
 
-def command_processing (df_nominalvalues: pd.DataFrame, command_queue: list, timer) -> None:
+def command_processing (df_nominalvalues: pd.DataFrame, command_queue: list, time_queue: list, T: int) -> None:
     
     # PASO 3: le paso los valores nominales a application_management para ver en qué estado está el housekeeping
     df_housekeeping = application_management(df_nominalvalues) #df_housekeeping = application_management(housekeeping = df_nominalvalues)
@@ -131,17 +95,16 @@ def command_processing (df_nominalvalues: pd.DataFrame, command_queue: list, tim
     # PASO 7: imprimo el estado de housekeeping
     # en vez de imprimir hacer algo al respecto
     print("\nHouse Keeping\n\n", df_housekeeping)
-
-    for cmd in command_queue:
-        t = timer.get_current_time()
-        T = timer.get_current_cycle()
-        print(f"Ciclo: {T}, t: {t}, Comando: {cmd}")
-        time.sleep(1)
     
+    i = 0
+    for cmd in command_queue:
+        print(f"Ciclo: {T}, t: {time_queue[i]}, Comando: {cmd}")
+        time.sleep(1)
+        i+=1
     return
 
 
-def event_handling(event: str, event_register: str, deftable_eventos: str, dT: int, timer) -> list:
+def event_handling(event: str, event_register: str, deftable_eventos: str, dT: int, t: int, T: int) -> list:
     command_queue_event = []
 
     df_deftable = CSV2DF(deftable_eventos)
@@ -149,8 +112,7 @@ def event_handling(event: str, event_register: str, deftable_eventos: str, dT: i
 
     command_queue_event = df_blockcmd['Comandos'].values.tolist()
 
-    t = timer.get_current_time()
-    new_row = pd.DataFrame({'Descripcion': [df_blockcmd["Evento"].values[0]], 'Tiempo Universal': [t]})
+    new_row = pd.DataFrame({'Descripcion': [df_blockcmd["Evento"].values[0]], 'Ciclo': [T], 'Tiempo': [t]})
     df_evento = pd.DataFrame(new_row)
     DF2CSV(df_evento, event_register, 'append')
 
@@ -158,35 +120,6 @@ def event_handling(event: str, event_register: str, deftable_eventos: str, dT: i
         command_queue_event.append(None)
 
     return command_queue_event
-
-
-'''def application_management (**kwargs):
-    """
-    Esta función ahora mismo solo reporta el estado de un sensor de temperatura, pero se debería ingresar con una opción y sus inputs
-    para que realice más tareas que el housekeeping. Por ejemplo, si fuera a activar actuadores lo haría desde aquí.
-    """
-    print(type(kwargs.get('housekeeping')))
-    if kwargs.get('housekeeping') != :
-
-        df_nominalvalues = kwargs.get('housekeeping')
-
-        # PASO 4: obtengo los estados de las variables representativas del housekeeping
-        df_realvalues = sensing_temperatures(df_nominalvalues["Sensor"].values.tolist())
-
-        # PASO 5: comparo los valores nominales de las variables representativas con los estados de las variables
-        state_list = []
-
-        for sensor, cols in df_realvalues.iterrows():
-            print("sensor:", sensor)
-            print("cols:", cols)
-            
-        # PASO 6: creo el DataFrame que reporta el estado de un sensor: 'Out of range' o 'In range'
-        index = pd.Index(sensors_list, name="Sensor")
-        df_housekeeping = pd.DataFrame({'Estado': state_list}, index=index)
-        
-        return df_housekeeping
-    else:
-        return '''
 
 
 def application_management (df_nominalvalues: pd.DataFrame):
@@ -261,8 +194,7 @@ def main():
     df_escenario = CSV2DF(escenario_filename)
 
     # Definición de granularidades temporales
-    dT = 5
-    dt = 1
+    dT = 13
     
     # Rutas a archivos auxiliares
     deftable_modos = "deftable_modos.csv"               #Def. Table con Bloque de Comandos para cada modo
@@ -272,42 +204,53 @@ def main():
     event_register = "event_register.csv"              
     
     # Creación del DataFrame donde se almacenarán los eventos ocurridos
-    df = pd.DataFrame(columns=['Descripcion', 'Tiempo Universal'])
+    df = pd.DataFrame(columns=['Descripcion', 'Ciclo', 'Tiempo'])
     DF2CSV(df, event_register, 'write')
-
-    # Inicio del reloj
-    timer = TimerThread()
-    timer.start()
+    
+    previous_mode = None
 
     endProgram = False
     while not endProgram:
         
+        T = 0
         for index, cols in df_escenario.iterrows():
+
             df_mode = df_escenario.loc[[index], :]
             cant_ciclos = df_mode['Ciclos'].values[0]
             mode_name = df_mode['Modo'].values[0]
-            command_queue, df_nominalvalues = mode_management(mode_name, cant_ciclos, dT, deftable_modos, deftable_transicion, deftable_housekeeping)
             
-            event = bool(random.getrandbits(1))
-            if event:
-                event = random.choice(["Perdida de SMA por drag", "Perturbaciones por gravedad"])
-                command_queue = event_handling(event, event_register, deftable_eventos, dT, timer)
-                command_processing(df_nominalvalues, command_queue, timer)
-            else:
+            for ciclo in range(cant_ciclos):
 
+                time_queue = list(range(dT))
                 
-                # PASO 1: obtengo los valores nominales de las variables representativas de housekeeping del modo
-                #
+                command_queue, df_nominalvalues, mode_name = mode_management(mode_name, previous_mode, dT, deftable_modos, deftable_transicion, deftable_housekeeping)
                 
-                # PASO 2: paso los valores nominales a commando processing para obtener el estado de housekeeping allí
-                command_processing(df_nominalvalues, command_queue, timer)
+                event_time = None
+                for t in range(dT):
+
+                    probability = 0.2
+                    if random.random() < probability:
+                        event = True
+                        event_cycle = T
+                        event_time = t
+
+                    else:
+                        event = False
+                    
+                if event:
+                    event = random.choice(["Evento E", "Evento F"])
+                    command_queue = event_handling(event, event_register, deftable_eventos, dT, event_time, event_cycle)
+                    command_processing(df_nominalvalues, command_queue, time_queue, T)
+                    mode_name = 'Safe'
+                
+                else:
+                    command_processing(df_nominalvalues, command_queue, time_queue, T)
+            
+                previous_mode = mode_name
+                T += 1
 
         endProgram = True
 
-    # Fin del reloj
-    timer.stop()
-    timer.join()
-
 if __name__ == "__main__":
     main()
-
+    
