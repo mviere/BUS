@@ -4,7 +4,7 @@ import threading
 import time
 import random
 import FuncAux as fa
-
+import datetime
 
 # %% Algoritmo C2A
 # ---------------------------------------------------------------------------- #
@@ -115,7 +115,7 @@ def event_handling(event_list: pd.DataFrame, event_register: str, deftable_event
 
             command_queue_event.extend(df_blockcmd['Comandos'].values.tolist())
 
-            new_row = pd.DataFrame({'Descripcion': [df_blockcmd["Evento"].values[0]], 'Ciclo': df['Ciclo'][0], 'Tiempo': df['Tiempo'][0]})
+            new_row = pd.DataFrame({'Descripcion': [df_blockcmd["Evento"].values[0]], 'Tiempo': df['Tiempo'][0]})
             df_evento = pd.DataFrame(new_row)
             fa.DF2CSV(df_evento, event_register, 'append')
 
@@ -123,6 +123,14 @@ def event_handling(event_list: pd.DataFrame, event_register: str, deftable_event
                command_queue_event.append(None)
 
     return command_queue_event
+
+
+def command_processing(command_queue: str, t: int, T: int):
+    
+    cmd = command_queue[t]
+    print(f"Ciclo: {T}, t: {t}, Comando: {cmd}")
+
+    return
 
 
 # %% Application
@@ -171,16 +179,18 @@ def housekeeping (df_nominalvalues: pd.DataFrame):
     return df_housekeeping
 
 
-def event_test (T, t):
+def event_test ():
     
     df = None
-    probability = 0.1
+    probability = 0.01
 
     if random.random() < probability:
 
         event = random.choice(["Evento E", "Evento F"])
         
-        data = {'Ciclo': [T], 'Tiempo': [t], 'Evento': [event]}
+        t_actual = datetime.datetime.now().strftime('%H:%M:%S')
+
+        data = {'Tiempo': [t_actual], 'Evento': [event]}
         df = pd.DataFrame(data)
 
     return df
@@ -196,6 +206,7 @@ def temp_sensor (sensor):
     temp = random.uniform(-40, 80)
 
     return temp
+
 
 def actuators ():
     return
@@ -221,7 +232,7 @@ def main():
     event_register = "event_register.csv"              
     
     # Creación del DataFrame donde se almacenarán los eventos ocurridos
-    df = pd.DataFrame(columns=['Descripcion', 'Ciclo', 'Tiempo'])
+    df = pd.DataFrame(columns=['Descripcion', 'Tiempo'])
     fa.DF2CSV(df, event_register, 'write')
     
     endProgram = False
@@ -236,14 +247,14 @@ def main():
             df_mode = df_escenario.loc[[index], :]
             cant_ciclos = df_mode['Ciclos'].values[0]
             mode_name = df_mode['Modo'].values[0]
-            event_list = []
-            
+            event_list = [None]       
+
             for ciclo in range(cant_ciclos):
 
-                if len(event_list) == 0:
+                if all(value is None for value in event_list):
 
                     command_queue, df_nominalvalues, mode_name = mode_management(mode_name, previous_mode, dT, deftable_modos, deftable_transicion, deftable_housekeeping)
-                
+            
                 else:
 
                     command_queue = event_handling(event_list, event_register, deftable_eventos, dT)
@@ -251,7 +262,7 @@ def main():
 
                 for t in range(dT):
 
-                    event_list.append(event_test(T, t))
+                    event_list.append(event_test())
                     
                     # Ejecuto la realización del housekeeping
                     SafeMode = application_management('housekeeping', df_nominalvalues)
@@ -260,9 +271,8 @@ def main():
                     #if SafeMode:
                         #print('Activar Safe Mode')
 
-                    cmd = command_queue[t]
-                    print(f"Ciclo: {T}, t: {t}, Comando: {cmd}")
-         
+                    command_processing(command_queue, t, T)
+                    
                 previous_mode = mode_name
                 T += 1
 
