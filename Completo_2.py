@@ -22,6 +22,7 @@ def mode_processing(deftable_modos: str, deftable_housekeeping: str, mode_name: 
 
     for cmd in df_blockcmd['Comandos'].values.tolist():
         commmand_queue.append(cmd)
+
     for t in df_blockcmd['Duracion'].values.tolist():
         duracion.append(t)
     
@@ -42,6 +43,7 @@ def mode_transition(deftable_filename: str, dT: int):
         for c in cmd:
             if len(command_queue_trans) < dT:
                 command_queue_trans.append(c)
+                
             else:
                 break
 
@@ -65,45 +67,10 @@ def mode_management (mode_name: str, previous_mode: str, dT: int, deftable_modos
         for j in range(lista_duracion[i]):
             command_queue.append(command_queue2[i])
 
-    while len(command_queue) % dT != 0:
+    while len(command_queue) < dT:
         command_queue.append(None)
 
     return command_queue, df_nominalvalues, mode_name
-
-
-def command_processing (df_nominalvalues: pd.DataFrame, command_queue: list, time_queue: list, T: int) -> None:
-    
-    # Ejecuto la realización del housekeeping
-    SafeMode = application_management('housekeeping', df_nominalvalues)
-    
-    # Ejecuto la activación del Safe Mode de ser necesario
-    if SafeMode:
-        print('Activar Safe Mode')
-
-    i = 0
-    for cmd in command_queue:
-        print(f"Ciclo: {T}, t: {time_queue[i]}, Comando: {cmd}")
-        time.sleep(1)
-        i+=1
-    return
-
-
-def event_handling(event: str, event_register: str, deftable_eventos: str, dT: int, t: int, T: int) -> list:
-    command_queue_event = []
-
-    df_deftable = fa.CSV2DF(deftable_eventos)
-    df_blockcmd = df_deftable.loc[df_deftable["Evento"] == event]
-
-    command_queue_event = df_blockcmd['Comandos'].values.tolist()
-
-    new_row = pd.DataFrame({'Descripcion': [df_blockcmd["Evento"].values[0]], 'Ciclo': [T], 'Tiempo': [t]})
-    df_evento = pd.DataFrame(new_row)
-    fa.DF2CSV(df_evento, event_register, 'append')
-
-    while len(command_queue_event) < dT:
-        command_queue_event.append(None)
-
-    return command_queue_event
 
 
 def application_management (option: str, df_nominalvalues: pd.DataFrame):
@@ -133,6 +100,29 @@ def application_management (option: str, df_nominalvalues: pd.DataFrame):
     
     else:
         return
+
+
+def event_handling(event_list: pd.DataFrame, event_register: str, deftable_eventos: str, dT: int) -> list:
+    
+    command_queue_event = []
+
+    for df in event_list:
+
+        if df is not None:
+
+            df_deftable = fa.CSV2DF(deftable_eventos)
+            df_blockcmd = df_deftable.loc[df_deftable["Evento"] == df['Evento'][0]]
+
+            command_queue_event.extend(df_blockcmd['Comandos'].values.tolist())
+
+            new_row = pd.DataFrame({'Descripcion': [df_blockcmd["Evento"].values[0]], 'Ciclo': df['Ciclo'][0], 'Tiempo': df['Tiempo'][0]})
+            df_evento = pd.DataFrame(new_row)
+            fa.DF2CSV(df_evento, event_register, 'append')
+
+            while len(command_queue_event) < dT:
+               command_queue_event.append(None)
+
+    return command_queue_event
 
 
 # %% Application
@@ -181,6 +171,21 @@ def housekeeping (df_nominalvalues: pd.DataFrame):
     return df_housekeeping
 
 
+def event_test (T, t):
+    
+    df = None
+    probability = 0.1
+
+    if random.random() < probability:
+
+        event = random.choice(["Evento E", "Evento F"])
+        
+        data = {'Ciclo': [T], 'Tiempo': [t], 'Evento': [event]}
+        df = pd.DataFrame(data)
+
+    return df
+
+
 # %% Componentes
 # ---------------------------------------------------------------------------- #
 
@@ -219,45 +224,45 @@ def main():
     df = pd.DataFrame(columns=['Descripcion', 'Ciclo', 'Tiempo'])
     fa.DF2CSV(df, event_register, 'write')
     
+    endProgram = False
     previous_mode = None
 
-    endProgram = False
     while not endProgram:
         
         T = 0
+
         for index, cols in df_escenario.iterrows():
 
             df_mode = df_escenario.loc[[index], :]
             cant_ciclos = df_mode['Ciclos'].values[0]
             mode_name = df_mode['Modo'].values[0]
+            event_list = []
             
             for ciclo in range(cant_ciclos):
 
-                time_queue = list(range(dT))
-                
-                command_queue, df_nominalvalues, mode_name = mode_management(mode_name, previous_mode, dT, deftable_modos, deftable_transicion, deftable_housekeeping)
-                
-                event_time = None
-                for t in range(dT):
+                if len(event_list) == 0:
 
-                    probability = 0.2
-                    if random.random() < probability:
-                        event = True
-                        event_cycle = T
-                        event_time = t
-
-                    else:
-                        event = False
-                    
-                if event:
-                    event = random.choice(["Evento E", "Evento F"])
-                    command_queue = event_handling(event, event_register, deftable_eventos, dT, event_time, event_cycle)
-                    command_processing(df_nominalvalues, command_queue, time_queue, T)
-                    mode_name = 'Safe'
+                    command_queue, df_nominalvalues, mode_name = mode_management(mode_name, previous_mode, dT, deftable_modos, deftable_transicion, deftable_housekeeping)
                 
                 else:
-                    command_processing(df_nominalvalues, command_queue, time_queue, T)
-            
+
+                    command_queue = event_handling(event_list, event_register, deftable_eventos, dT)
+                    mode_name = 'Safe Mode'
+
+                for t in range(dT):
+
+                    event_list.append(event_test(T, t))
+                    
+                    # Ejecuto la realización del housekeeping
+                    SafeMode = application_management('housekeeping', df_nominalvalues)
+    
+                    # Ejecuto la activación del Safe Mode de ser necesario
+                    #if SafeMode:
+                        #print('Activar Safe Mode')
+
+                    cmd = command_queue[t]
+                    print(f"Ciclo: {T}, t: {t}, Comando: {cmd}")
+         
                 previous_mode = mode_name
                 T += 1
 
