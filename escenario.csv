@@ -1,6 +1,7 @@
-Ciclos,Modo
-2,Modo A
-3,Modo B
-2,Modo C
-1,Modo B
-2,Modo A
+N,Modo
+0,Modo A
+5,Modo B
+7,Modo C
+10,Modo B
+11,Modo A
+12,End

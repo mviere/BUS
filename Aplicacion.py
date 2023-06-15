@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
-import threading
-import time
 import random
-import Componentes as comp
-
+import datetime
+import Componentes as com
+import FuncAux as fa
+ 
 
 # %% Application
 # ---------------------------------------------------------------------------- #
@@ -13,10 +13,10 @@ def sensing_temperature (sensors):
     """
     Esta función interactúa con Componentes para obtener las temperaturas en los sensores ingresados.
     """
-    temp_list = []
+    temp_list = [] 
 
     for sensor in sensors:
-        temp = comp.temp_sensor(sensor)
+        temp = com.temp_sensor(sensor)
         temp_list.append(temp)
 
     index = pd.Index(sensors, name='Sensor')
@@ -50,3 +50,26 @@ def housekeeping (df_nominalvalues: pd.DataFrame):
     df_housekeeping = pd.DataFrame({'Estado': state_list}, index=index)
 
     return df_housekeeping
+
+
+def anomaly_control (event_register: str):
+
+    '''
+    Esta funcion utiliza event_sensor, toma el valor de la variable, lo asocia a un evento
+    y te devuelve ID, Descripcion y Tiempo
+    '''
+    
+    variable = com.event_sensor()
+
+    event_ID = 0
+    event_description = None
+    t_actual = datetime.datetime.now().strftime('%H:%M:%S')
+
+    if variable not in range(-40, 80):
+
+        event_ID = 1
+        event_description = 'Fuga'
+    
+    df_event = pd.DataFrame({'Event ID': [event_ID], 'Description': [event_description], 'Time': [t_actual]})
+        
+    return df_event

@@ -4,6 +4,7 @@ import threading
 import time
 import random
 
+ 
 def CSV2DF(filename: str) -> pd.DataFrame:
 
     # Leo el archivo CSV y lo almaceno en un DataFrame
@@ -19,3 +20,4 @@ def DF2CSV (df: pd.DataFrame, filename: str, estilo: str):
         df.to_csv(filename, mode='w', index=False)
 
     return
+    
