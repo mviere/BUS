@@ -1,1 +1,13 @@
-Descripcion,Tiempo
+Event ID,Description,Time,Ciclo
+1,Fuga,16:55:01,0
+1,Fuga,16:55:11,1
+1,Fuga,16:55:18,4
+1,Fuga,16:55:25,6
+1,Fuga,16:55:32,8
+1,Fuga,16:55:39,10
+1,Fuga,16:55:46,12
+1,Fuga,16:55:52,14
+1,Fuga,16:55:59,16
+1,Fuga,16:56:03,18
+1,Fuga,16:56:09,19
+1,Fuga,16:56:16,21

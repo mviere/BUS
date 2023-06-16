@@ -52,7 +52,7 @@ def housekeeping (df_nominalvalues: pd.DataFrame):
     return df_housekeeping
 
 
-def anomaly_control (event_register: str):
+def anomaly_control (n: int):
 
     '''
     Esta funcion utiliza event_sensor, toma el valor de la variable, lo asocia a un evento
@@ -70,6 +70,6 @@ def anomaly_control (event_register: str):
         event_ID = 1
         event_description = 'Fuga'
     
-    df_event = pd.DataFrame({'Event ID': [event_ID], 'Description': [event_description], 'Time': [t_actual]})
+    df_event = pd.DataFrame({'Event ID': [event_ID], 'Description': [event_description], 'Time': [t_actual], 'Ciclo': [n]})
         
     return df_event
