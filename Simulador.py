@@ -16,10 +16,8 @@ def main():
 
     # Un tiempo determinado T se define a partir del número de ciclo N y el número de step dT,      T = N + dT
     # A su vez, un ciclo N está dividido en steps dT.
-        # Duración de un ciclo N (cantidad de steps)
+    # Duración de un ciclo N (cantidad de steps)
     dN = 13
-        # Duración de un step dT (cantidad de segundos)
-    #deltaT = 1
 
     # Rutas a archivos auxiliares
     deftable_modes = "deftable_modes.csv"                #Def. Table con Bloque de Comandos ID para cada modo
@@ -44,15 +42,15 @@ def main():
         for index in range(len(df_escenario.index.values)-1):
 
             mode_name = df_escenario.loc[index,'Modo'] 
-            N = int(df_escenario.loc[index,'N']) + N_plusplus # N es el N donde arranca del Modo A   N = 7 + 2 = 9
-            N_post = int(df_escenario.loc[index+1,'N']) + N_plusplus # N_post es el N donde arranca del Modo B    N = 10 + 2 = 
+            N = int(df_escenario.loc[index,'N']) + N_plusplus
+            N_post = int(df_escenario.loc[index+1,'N']) + N_plusplus 
 
             transition = True
             N_plus = 0
             
-            for i in range(N, N_post): # (10,11)      # i = 11
+            for i in range(N, N_post): 
 
-                n = N_plus + i     # n = 12
+                n = N_plus + i    
                 df_commands, df_nominalvalues = ac.mode_management(mode_name, transition, deftable_modes, deftable_transition, deftable_housekeeping, deftable_block)
                 SafeMode = ac.application_management('housekeeping', df_nominalvalues)
                 
@@ -65,11 +63,9 @@ def main():
                     df_safemode, df_nominalvalues = ac.mode_management('Modo S', False, deftable_modes, deftable_transition, deftable_housekeeping, deftable_block)
                 else:
                     df_safemode = pd.DataFrame({'A' : []})
-                #df_event_commands = pd.DataFrame({'A' : []})
-                #df_safemode = pd.DataFrame({'A' : []})
-                n_plus = ac.command_processing(df_commands, df_safemode, df_event_commands, dN, n, i)   # n_plus = 1
+                n_plus = ac.command_processing(df_commands, df_safemode, df_event_commands, dN, n, i)   
                 transition = False
-                N_plus = N_plus + n_plus      # N_plus = 2
+                N_plus = N_plus + n_plus      
                 ac.anomaly_logger(event_register, n)
             N_plusplus = N_plusplus + N_plus
         endProgram = True

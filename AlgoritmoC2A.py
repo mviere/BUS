@@ -70,28 +70,6 @@ def mode_management (mode_name: str, transition: bool, deftable_modos: str, deft
         return df_commands, df_nominalvalues
     else:
         return df_modecommands, df_nominalvalues
-    
-'''def mode_management (mode_name: str, previous_mode: str, N: int, deftable_modos: str, deftable_transicion: str, deftable_housekeeping: str) -> list:
-    """
-    Esta función
-    """
-    command_queue = []
-
-    if mode_name != previous_mode:
-
-        command_queue_trans = mode_transition(deftable_transicion, N)
-        command_queue.extend(command_queue_trans)
-   
-    command_queue2, lista_duracion, df_nominalvalues = mode_processing(deftable_modos, deftable_housekeeping, mode_name)
-    
-    for i in range(len(command_queue2)):
-        for j in range(lista_duracion[i]):
-            command_queue.append(command_queue2[i])
-
-    while len(command_queue) < N:
-        command_queue.append(None)
-
-    return command_queue, df_nominalvalues'''
 
 
 def application_management (option: str, df_nominalvalues: pd.DataFrame):

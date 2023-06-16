@@ -26,9 +26,10 @@ def sensing_temperature (sensors):
 
 
 def housekeeping (df_nominalvalues: pd.DataFrame):
-    """
+    '''
     Esta función realiza las tareas de housekeeping y reporta su estado.
-    """
+    '''
+    
     # Solicito estado de las variables representativas del housekeeping
     ## Hoy son las temepraturas de 3 sensores, pero podrían ser otras más como la carga de batería
     df_realvalues = sensing_temperature(df_nominalvalues.index.values)
