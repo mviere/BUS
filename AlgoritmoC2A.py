@@ -172,7 +172,10 @@ def event_handling(deftable_eventos: str, deftable_block_command: str, event_reg
 def command_processing(df_commands: pd.DataFrame, df_safemode: pd.DataFrame, df_event_commands: pd.DataFrame, dN: int, n: int):
 
     if not df_safemode.empty and not df_event_commands.empty:
-        print(f"Ciclo {n}: Safemode")
+
+        n_plus = 2
+
+        print(f"Safemode")
         for dT in range(dN):
             if dT in df_safemode['dT'].values.tolist():
                 cmd = df_safemode.loc[(df_safemode['dT'] == dT), :]['Command'].values[0]
@@ -180,9 +183,9 @@ def command_processing(df_commands: pd.DataFrame, df_safemode: pd.DataFrame, df_
                 cmd = ''
             print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
             time.sleep(0.5)
-        print(f"Ciclo {n}: event handling")
+
         n = n + 1
-        print(f"Ciclo {n}: event handling")
+        print(f"Event")
         for dT in range(dN):
             if dT in df_event_commands['dT'].values.tolist():
                 cmd = df_event_commands.loc[(df_event_commands['dT'] == dT), :]['Command'].values[0]
@@ -190,31 +193,33 @@ def command_processing(df_commands: pd.DataFrame, df_safemode: pd.DataFrame, df_
                 cmd = ''
             print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
             time.sleep(0.5)
-        print(f"Ciclo {n}: modos")
+
         n = n + 1
-        print(f"Ciclo {n}: modos")
+        print(f"Mode")
         for dT in range(dN):
             if dT in df_commands['dT'].values.tolist():
                 cmd = df_commands.loc[(df_commands['dT'] == dT), :]['Command'].values[0]
+            else:
+                cmd = ''
+            print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
+            time.sleep(0.5)
+        
+    # ---------------------------------------------------------
+    if not df_safemode.empty and df_event_commands.empty:
+
+        n_plus = 1
+
+        print(f"Safemode")
+        for dT in range(dN):
+            if dT in df_safemode['dT'].values.tolist():
+                cmd = df_safemode.loc[(df_safemode['dT'] == dT), :]['Command'].values[0]
             else:
                 cmd = ''
             print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
             time.sleep(0.5)
     
-    # ---------------------------------------------------------
-    if not df_safemode.empty and df_event_commands.empty:
-
-        print(f"Ciclo {n}: Safemode")
-        for dT in range(dN):
-            if dT in df_safemode['dT'].values.tolist():
-                cmd = df_safemode.loc[(df_safemode['dT'] == dT), :]['Command'].values[0]
-            else:
-                cmd = ''
-            print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
-            time.sleep(0.5)
-        print(f"Ciclo {n}: modos")        
         n = n + 1
-        print(f"Ciclo {n}: modos")
+        print(f"Mode")
         for dT in range(dN):
             if dT in df_commands['dT'].values.tolist():
                 cmd = df_commands.loc[(df_commands['dT'] == dT), :]['Command'].values[0]
@@ -222,10 +227,13 @@ def command_processing(df_commands: pd.DataFrame, df_safemode: pd.DataFrame, df_
                 cmd = ''
             print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
             time.sleep(0.5)
+
     # ---------------------------------------------------------
     if df_safemode.empty and not df_event_commands.empty:
 
-        print(f"Ciclo {n}: event handling")
+        n_plus = 1
+
+        print(f"Event")
         for dT in range(dN):
             if dT in df_event_commands['dT'].values.tolist():
                 cmd = df_event_commands.loc[(df_event_commands['dT'] == dT), :]['Command'].values[0]
@@ -233,9 +241,9 @@ def command_processing(df_commands: pd.DataFrame, df_safemode: pd.DataFrame, df_
                 cmd = ''
             print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
             time.sleep(0.5)
-        print(f"Ciclo {n}: modos")
+
         n = n + 1
-        print(f"Ciclo {n}: modos")
+        print(f"Mode")
         for dT in range(dN):
             if dT in df_commands['dT'].values.tolist():
                 cmd = df_commands.loc[(df_commands['dT'] == dT), :]['Command'].values[0]
@@ -246,7 +254,10 @@ def command_processing(df_commands: pd.DataFrame, df_safemode: pd.DataFrame, df_
 
     # ---------------------------------------------------------
     if df_safemode.empty and df_event_commands.empty:
-        print(f"Ciclo {n}: modos")
+
+        n_plus = 0
+
+        print(f"Mode")
         for dT in range(dN):
             if dT in df_commands['dT'].values.tolist():
                 cmd = df_commands.loc[(df_commands['dT'] == dT), :]['Command'].values[0]
@@ -254,7 +265,8 @@ def command_processing(df_commands: pd.DataFrame, df_safemode: pd.DataFrame, df_
                 cmd = ''
             print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
             time.sleep(0.5)
-    return n
+            
+    return n_plus
 
 
 

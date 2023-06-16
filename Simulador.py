@@ -37,31 +37,32 @@ def main():
 
     while not endProgram:
 
-        new_n = 0
+        N_plus = 0
+        n_plus = 0
+        
         for index in range(len(df_escenario.index.values)-1):
-
+            print("--------------------------------------------------")
             mode_name = df_escenario.loc[index,'Modo']
-            N = int(df_escenario.loc[index,'N'])
-            N_post = int(df_escenario.loc[index+1,'N'])
-
+            N = int(df_escenario.loc[index,'N']) + N_plus
+            N_post = int(df_escenario.loc[index+1,'N']) + N_plus
+            print(f"Se cubriran los ciclos: [{N},{N_post}]")
             transition = True
-            
+            N_plus = 0
             for n in range(N, N_post):
-                print("n del Simulador:", n)
-                n = new_n + n
-                print("n + new_n del Simulador:", n)
-                
+                # Acá hay un problema con range. Con todos los n_plus dentro de este for, me voy más allá del N_post
+                n = n_plus + n
                 df_commands, df_nominalvalues = ac.mode_management(mode_name, transition, deftable_modes, deftable_transition, deftable_housekeeping, deftable_block)
                 SafeMode = ac.application_management('housekeeping', df_nominalvalues)
-                df_event_commands = ac.event_handling(deftable_events, deftable_block, event_register)
-                
+                #df_event_commands = ac.event_handling(deftable_events, deftable_block, event_register)
+                df_event_commands = pd.DataFrame({'A' : []})
                 if SafeMode:
                     df_safemode, df_nominalvalues = ac.mode_management('Modo S', False, deftable_modes, deftable_transition, deftable_housekeeping, deftable_block)
                 else:
                     df_safemode = pd.DataFrame({'A' : []})
                 
-                new_n = ac.command_processing(df_commands, df_safemode, df_event_commands, dN, n)
+                n_plus = ac.command_processing(df_commands, df_safemode, df_event_commands, dN, n)
                 transition = False
+                N_plus = N_plus + n_plus
 
         endProgram = True
 
