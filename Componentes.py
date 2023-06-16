@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import random
  
-
+ 
 # %% Componentes
 # ---------------------------------------------------------------------------- #
 
@@ -19,7 +19,7 @@ def event_sensor ():
     Esta función
     """
     
-    variable = random.uniform(-41, 81)
+    variable = random.uniform(-150, 190)
 
     return variable
 

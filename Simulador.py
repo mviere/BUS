@@ -4,7 +4,7 @@ import AlgoritmoC2A as ac
 import FuncAux as fa
 import Aplicacion as app
 
-
+ 
 # %% Simulador
 # ---------------------------------------------------------------------------- #
 
@@ -17,9 +17,9 @@ def main():
     # Un tiempo determinado T se define a partir del número de ciclo N y el número de step dT,      T = N + dT
     # A su vez, un ciclo N está dividido en steps dT.
         # Duración de un ciclo N (cantidad de steps)
-    deltaN = 13
+    dN = 13
         # Duración de un step dT (cantidad de segundos)
-    deltaT = 1
+    #deltaT = 1
 
     # Rutas a archivos auxiliares
     deftable_modes = "deftable_modes.csv"                #Def. Table con Bloque de Comandos ID para cada modo
@@ -34,12 +34,10 @@ def main():
     fa.DF2CSV(df, event_register, 'write')
     
     endProgram = False
-    previous_mode = None
 
     while not endProgram:
-        
-        T = 0
 
+        new_n = 0
         for index in range(len(df_escenario.index.values)-1):
 
             mode_name = df_escenario.loc[index,'Modo']
@@ -47,7 +45,11 @@ def main():
             N_post = int(df_escenario.loc[index+1,'N'])
 
             transition = True
+            
             for n in range(N, N_post):
+                print("n del Simulador:", n)
+                n = new_n + n
+                print("n + new_n del Simulador:", n)
                 
                 df_commands, df_nominalvalues = ac.mode_management(mode_name, transition, deftable_modes, deftable_transition, deftable_housekeeping, deftable_block)
                 SafeMode = ac.application_management('housekeeping', df_nominalvalues)
@@ -55,10 +57,10 @@ def main():
                 
                 if SafeMode:
                     df_safemode, df_nominalvalues = ac.mode_management('Modo S', False, deftable_modes, deftable_transition, deftable_housekeeping, deftable_block)
+                else:
+                    df_safemode = pd.DataFrame({'A' : []})
                 
-                ac.command_processing(df_commands, df_nominalvalues, df_safemode, df_event_commands, deltaN)
-
-                T += 1
+                new_n = ac.command_processing(df_commands, df_safemode, df_event_commands, dN, n)
                 transition = False
 
         endProgram = True

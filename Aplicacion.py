@@ -5,7 +5,7 @@ import datetime
 import Componentes as com
 import FuncAux as fa
  
-
+ 
 # %% Application
 # ---------------------------------------------------------------------------- #
 

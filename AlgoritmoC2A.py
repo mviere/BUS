@@ -4,17 +4,19 @@ import FuncAux as fa
 import Aplicacion as app
 import time
  
-
+ 
 # %% Algoritmo C2A
 # ---------------------------------------------------------------------------- #
 
-def mode_processing(deftable_modos: str, deftable_block: str, deftable_housekeeping: str, mode_name: str, mode_ID: str):
+def mode_processing(deftable_modos: str, deftable_block: str, deftable_housekeeping: str, mode_name: str):
     
     # Creación del DataFrame con los comandos y su deploy time
     
     df_deftable_modos = fa.CSV2DF(deftable_modos)
     df_deftable_block = fa.CSV2DF(deftable_block)
-    
+
+    mode_ID = mode_name[-1]
+
     block_ID = df_deftable_modos.loc[(df_deftable_modos["Modo ID"] == mode_ID), :]['Block ID'].values[0]
     df_commands = df_deftable_block.loc[(df_deftable_block["Block ID"] == block_ID), :]
     
@@ -134,7 +136,7 @@ def anomaly_logger(event_register: str):
     return
 
 
-def event_handling(deftable_eventos: str, deftable_block_command: str, event_register: str, N: int) -> list:
+def event_handling(deftable_eventos: str, deftable_block_command: str, event_register: str) -> list:
     
     '''
     Revisa event_register
@@ -144,29 +146,123 @@ def event_handling(deftable_eventos: str, deftable_block_command: str, event_reg
     df_deftable = fa.CSV2DF(deftable_eventos)
     df_blockcmd = fa.CSV2DF(deftable_block_command)
     
-    commmand_queue = []
-    deploy_time = []
+    if df_register.empty:
+        df_eventcommands = pd.DataFrame({'A' : []})
+   
+    else:
+        commmand_queue = []
+        deploy_time = []
 
-    for index, row in df_register.interrows():
+        for index, row in df_register.interrows():
 
-        event_ID = row['Event_ID']
-        block_ID = df_deftable.loc[(df_deftable["Event ID"] == event_ID), :]['Block ID'].values[0]
-        df_commands = df_blockcmd.loc[(df_blockcmd["Block ID"] == block_ID), :]
-    
-        for cmd in df_commands['Command'].values.tolist():
-            commmand_queue.append(cmd)
-        for dT in df_commands['dT'].values.tolist():
-            deploy_time.append(dT)
-    
-    df_eventcommands = pd.DataFrame({'Command': commmand_queue, 'dT': deploy_time})
+            event_ID = row['Event_ID']
+            block_ID = df_deftable.loc[(df_deftable["Event ID"] == event_ID), :]['Block ID'].values[0]
+            df_commands = df_blockcmd.loc[(df_blockcmd["Block ID"] == block_ID), :]
+        
+            for cmd in df_commands['Command'].values.tolist():
+                commmand_queue.append(cmd)
+            for dT in df_commands['dT'].values.tolist():
+                deploy_time.append(dT)
+        
+        df_eventcommands = pd.DataFrame({'Command': commmand_queue, 'dT': deploy_time})
 
     return df_eventcommands
 
 
+def command_processing(df_commands: pd.DataFrame, df_safemode: pd.DataFrame, df_event_commands: pd.DataFrame, dN: int, n: int):
+
+    if not df_safemode.empty and not df_event_commands.empty:
+        print(f"Ciclo {n}: Safemode")
+        for dT in range(dN):
+            if dT in df_safemode['dT'].values.tolist():
+                cmd = df_safemode.loc[(df_safemode['dT'] == dT), :]['Command'].values[0]
+            else:
+                cmd = ''
+            print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
+            time.sleep(0.5)
+        print(f"Ciclo {n}: event handling")
+        n = n + 1
+        print(f"Ciclo {n}: event handling")
+        for dT in range(dN):
+            if dT in df_event_commands['dT'].values.tolist():
+                cmd = df_event_commands.loc[(df_event_commands['dT'] == dT), :]['Command'].values[0]
+            else:
+                cmd = ''
+            print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
+            time.sleep(0.5)
+        print(f"Ciclo {n}: modos")
+        n = n + 1
+        print(f"Ciclo {n}: modos")
+        for dT in range(dN):
+            if dT in df_commands['dT'].values.tolist():
+                cmd = df_commands.loc[(df_commands['dT'] == dT), :]['Command'].values[0]
+            else:
+                cmd = ''
+            print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
+            time.sleep(0.5)
+    
+    # ---------------------------------------------------------
+    if not df_safemode.empty and df_event_commands.empty:
+
+        print(f"Ciclo {n}: Safemode")
+        for dT in range(dN):
+            if dT in df_safemode['dT'].values.tolist():
+                cmd = df_safemode.loc[(df_safemode['dT'] == dT), :]['Command'].values[0]
+            else:
+                cmd = ''
+            print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
+            time.sleep(0.5)
+        print(f"Ciclo {n}: modos")        
+        n = n + 1
+        print(f"Ciclo {n}: modos")
+        for dT in range(dN):
+            if dT in df_commands['dT'].values.tolist():
+                cmd = df_commands.loc[(df_commands['dT'] == dT), :]['Command'].values[0]
+            else:
+                cmd = ''
+            print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
+            time.sleep(0.5)
+    # ---------------------------------------------------------
+    if df_safemode.empty and not df_event_commands.empty:
+
+        print(f"Ciclo {n}: event handling")
+        for dT in range(dN):
+            if dT in df_event_commands['dT'].values.tolist():
+                cmd = df_event_commands.loc[(df_event_commands['dT'] == dT), :]['Command'].values[0]
+            else:
+                cmd = ''
+            print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
+            time.sleep(0.5)
+        print(f"Ciclo {n}: modos")
+        n = n + 1
+        print(f"Ciclo {n}: modos")
+        for dT in range(dN):
+            if dT in df_commands['dT'].values.tolist():
+                cmd = df_commands.loc[(df_commands['dT'] == dT), :]['Command'].values[0]
+            else:
+                cmd = ''
+            print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
+            time.sleep(0.5)
+
+    # ---------------------------------------------------------
+    if df_safemode.empty and df_event_commands.empty:
+        print(f"Ciclo {n}: modos")
+        for dT in range(dN):
+            if dT in df_commands['dT'].values.tolist():
+                cmd = df_commands.loc[(df_commands['dT'] == dT), :]['Command'].values[0]
+            else:
+                cmd = ''
+            print(f"Ciclo: {n}, dT: {dT}, Comando: {cmd}")
+            time.sleep(0.5)
+    return n
+
+
+
+'''
 def command_processing(df_commands: pd.DataFrame, df_nominalvalues: pd.DataFrame, df_safemode: pd.DataFrame, df_event_commands: pd.DataFrame, dN: int):
     
     cmd = command_queue[t]
     print(f"Ciclo: {T}, t: {t}, Comando: {cmd}")
     time.sleep(1)
 
-    return
+    return'''
